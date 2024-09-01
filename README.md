@@ -29,8 +29,8 @@ This project consists of a set of microservices designed to integrate with Kafka
 ## Steps to Setup
 1. Clone the Repository
 ```
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/harshsngh1/Atlan-Assessment
+cd Atlan-Assessment
 ```
 2. Build the Docker Images  
 Navigate to the directories of each service and build the Docker images:
