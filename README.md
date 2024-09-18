@@ -32,7 +32,26 @@ This project consists of a set of microservices designed to integrate with Kafka
 git clone https://github.com/harshsngh1/Atlan-Assessment
 cd Atlan-Assessment
 ```
-2. Build the Docker Images  
+2. Start Services Using Docker Compose  
+Ensure you are in the directory containing docker-compose.yml and run:
+```
+docker-compose up -d
+```
+This will start Kafka, Zookeeper, Monte Carlo Ingestion Service, and Compliance Service.
+3. Create Kafka Topics in case they are not created
+Create the necessary Kafka topics manually if they are not created automatically:
+```
+docker exec -it <kafka-container-id> kafka-topics --create --topic monte-carlo-metadata --partitions 1 --replication-factor 1 --zookeeper zookeeper:2181
+docker exec -it <kafka-container-id> kafka-topics --create --topic pii-gdpr-annotations --partitions 1 --replication-factor 1 --zookeeper zookeeper:2181
+```
+or you can do it via docker desktop and going to kafka container
+```
+- cd /opt/kafka/bin
+- ./kafka-topics.sh --create --topic monte-carlo-metadata --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1
+- ./kafka-topics.sh --list --bootstrap-server kafka:9092
+- ./kafka-topics.sh --create --topic pii-gdpr-annotations --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1
+```
+4. Build the Docker Images if requried
 Navigate to the directories of each service and build the Docker images:
 ```
 cd monte-carlo-ingestion
@@ -41,40 +60,16 @@ docker build -t monte-carlo-ingestion .
 cd ../compliance-service
 docker build -t compliance-service .
 ```
-3. Start Services Using Docker Compose  
-Ensure you are in the directory containing docker-compose.yml and run:
-```
-docker-compose up
-```
-This will start Kafka, Zookeeper, Monte Carlo Ingestion Service, and Compliance Service.
-4. Create Kafka Topics  
-Create the necessary Kafka topics manually if they are not created automatically:
-```
-docker exec -it <kafka-container-id> kafka-topics --create --topic monte-carlo-metadata --partitions 1 --replication-factor 1 --zookeeper zookeeper:2181
-docker exec -it <kafka-container-id> kafka-topics --create --topic pii-gdpr-annotations --partitions 1 --replication-factor 1 --zookeeper zookeeper:2181
-```
 5. To Test This Setup
     1. Test Monte Carlo Ingestion Service  
     Use curl to send a test POST request:
     ```
-    curl -X POST http://localhost:8080/ingest -H "Content-Type: application/json" -d '{"key": "value"}'
+    curl -X POST http://localhost:8080/ingest -H "Content-Type: application/json" -d '{"table_name": "users","issue": "data_quality_issue","severity": "high"}'
     ```
-    This should result in the data being published to the monte-carlo-metadata Kafka topic.
+    This should result in the data being published to the `pii-gdpr-annotations` Kafka topic.
     2. Test Compliance Service  
     Ensure the compliance service is running and has successfully started. The compliance service should automatically process messages from the pii-gdpr-annotations topic and log notifications about data access control.  
     Check the logs for any errors or confirmation that the notifications are being processed:
     ```
     docker logs <compliance-service-container-id>
     ```
-
-## Troubleshooting
-- Kafka Issues: Check the Kafka and Zookeeper logs if topics are not being created or if there are leader election issues.
-```
-docker logs <kafka-container-id>
-docker logs <zookeeper-container-id>
-```
-- Service Logs: Inspect logs of Monte Carlo Ingestion and Compliance Service for errors or connection issues.
-```
-docker logs <monte-carlo-ingestion-container-id>
-docker logs <compliance-service-container-id>
-```

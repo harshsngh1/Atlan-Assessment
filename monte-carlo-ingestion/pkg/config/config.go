@@ -8,6 +8,6 @@ type Config struct {
 func LoadConfig() *Config {
 	return &Config{
 		KafkaBroker: "kafka:9092",
-		KafkaTopic:  "monte-carlo-metadata",
+		KafkaTopic:  "pii-gdpr-annotations",
 	}
 }

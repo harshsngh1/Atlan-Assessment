@@ -37,6 +37,7 @@ services:
       - kafka-net
     depends_on:
       - kafka
+    entrypoint: ["sh", "-c", "while ! nc -z kafka 9092; do sleep 1; done; ./compliance-service"]
 
 networks:
   kafka-net:
